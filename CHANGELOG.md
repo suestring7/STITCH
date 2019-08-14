@@ -1,3 +1,5 @@
+* YT edits
+	* Add comments to help understand the variables.
 * v1.6.0
 	* Introduce new variable S as the number of sets of parameters results are averaged over
 * v1.5.7
