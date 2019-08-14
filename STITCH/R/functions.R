@@ -169,10 +169,10 @@ STITCH <- function(
 
     ## #' @param pseudoHaploidModel How to model read probabilities in pseudo diploid model (shouldn't be changed)
     pseudoHaploidModel <- 9 ## remove this from being settable
-    phasefile <- "" ## do not export for now
+    phasefile <- "" ## do not export for now # YT: so he has the plan for get phasing data...
     ##  #' @param phasefile Path to phase file with truth phasing results. Empty for no phasefile. File has a header row with a name for each sample, matching what is found in the bam file. Each subject is then a tab seperated column, with 0 = ref and 1 = alt, separated by a vertical bar |, e.g. 0|0 or 0|1. Note therefore this file has one more row than posfile which has no header
 
-    outputHaplotypeProbabilities <- FALSE ## do not export for now
+    outputHaplotypeProbabilities <- FALSE ## do not export for now # YT: hmmmm...
     ## #' @param outputHaplotypeProbabilities Whether to output haplotype probabilities in files
 
     ## if doing e.g. STITCH again
@@ -385,7 +385,7 @@ STITCH <- function(
 
 
     ##
-    ## if we want, re-intersect with new set of positions
+    ## if we want, re-intersect with new set of positions # YT: as he said, not for normal use
     ##
     if(is.na(subsetSNPsfile)==FALSE & subsetSNPsfile!="NA") {
         print_message(paste0("Subsetting SNPs from file ", subsetSNPsfile))

@@ -64,7 +64,7 @@ make_and_write_output_file <- function(
     if (output_format == "bgvcf") {
         ## put into temp file, then later bgzip (future: can I stream this?)
         output_unbgzipped <- paste0(to_use_output_filename, ".building.vcf")
-        unlink(output_unbgzipped)
+        unlink(output_unbgzipped) #YT: If exists, delete the file
         make_and_write_vcf_header(
             output_vcf_header = output_unbgzipped,
             annot_header = annot_header,
@@ -127,11 +127,12 @@ make_and_write_output_file <- function(
         ## shrink params
         if (first_grid_in_region < last_grid_in_region) {
             grids_to_use <- first_grid_in_region:(last_grid_in_region - 1)
-            ## what? is this right?
+            ## what? is this right? # YT? what? why's he not sure? # R 1-based so 1+grids_to_use
             alphaMatCurrentLocal_tc <- alphaMatCurrent_tc[, 1 + grids_to_use, , drop = FALSE]
             transMatRateLocal_tc_H <- transMatRate_tc_H[, 1 + grids_to_use, , drop = FALSE]
             transMatRateLocal_tc_D <- transMatRate_tc_D[, 1 + grids_to_use, , drop = FALSE]            
         } else {
+            # YT first=last
             alphaMatCurrentLocal_tc <- NULL
             transMatRateLocal_tc_H <- NULL
             transMatRateLocal_tc_D <- NULL
@@ -206,6 +207,7 @@ make_and_write_output_file <- function(
         ##
         rm(out)
         if (N > 10000) {
+            # YT: print twice gc log? why?and where?
             gc(reset = TRUE); gc(reset = TRUE)
         }
 
@@ -222,10 +224,10 @@ make_and_write_output_file <- function(
         denom <- 2 * N * thetaHat * (1-thetaHat)
         info[snps_in_output_block] <- 1 - infoCount[, 2] / denom
         ## block out those where thetaHat is really close to 0 or 1
-        ## when very rare
+        ## when very rare # YT: very tricky! info[s:e][TRUE|FALSE] # but why 1?
         info[snps_in_output_block][(round(thetaHat, 2) == 0) | (round(thetaHat, 2) == 1)] <- 1
         info[info < 0] <- 0
-        ## not 100% sure this is OK, might fail if higher bq average, but anyway, entirely ref/alt SNPs not interesting
+        ## not 100% sure this is OK, might fail if higher bq average, but anyway, entirely ref/alt SNPs not interesting #? what's bq?
         estimatedAlleleFrequency[snps_in_output_block] <- afCount / N
         hwe[snps_in_output_block] <- generate_hwe_on_counts(hweCount, nSNPsInOutputBlock, nCores)
         hweCount_total[snps_in_output_block, ] <- hweCount
@@ -411,6 +413,7 @@ per_core_get_results <- function(
         sampleReads <- out$sampleReads
         bundledSampleReads <- out$bundledSampleReads
 
+	# YT: every results is called out =-=
         out <- get_alphaBetaBlocks_from_dir_for_sample(
             dir = tempdir,
             regionName = regionName,
@@ -432,7 +435,7 @@ per_core_get_results <- function(
             )
             pRgivenH1_m <- out$pRgivenH1_m
             pRgivenH2_m <- out$pRgivenH2_m
-            srp <- out$srp
+            srp <- out$srp   # YT: what's srp?
             bundledSampleProbs <- out$bundledSampleProbs
         }
 
@@ -501,22 +504,22 @@ per_core_get_results <- function(
         }
         
         ## 
-        eij <- round(gp_t[2, ] + 2 * gp_t[3, ], 3) ## prevent weird rounding issues
-        fij <- round(gp_t[2, ] + 4 * gp_t[3, ], 3) ##
+        eij <- round(gp_t[2, ] + 2 * gp_t[3, ], 3) ## prevent weird rounding issues #YT: 0/1 +2* 1/1 dosage
+        fij <- round(gp_t[2, ] + 4 * gp_t[3, ], 3) ## YT: 0/1+4*1/1 ?
 
         infoCount[, 1] <- infoCount[, 1, drop = FALSE] + eij
-        infoCount[, 2] <- infoCount[, 2, drop = FALSE] + (fij - eij**2)
+        infoCount[, 2] <- infoCount[, 2, drop = FALSE] + (fij - eij**2) #???
         ## this returns un-transposed results
         max_gen <- get_max_gen_rapid(gp_t)
         ## hweCount is NOT transposed!
-        hweCount[max_gen] <- hweCount[max_gen] + 1 ## hmmmmm not ideal
-        afCount <- afCount + (eij) / 2
+        hweCount[max_gen] <- hweCount[max_gen] + 1 ## hmmmmm not ideal # YT: so max_gen column 1, other 0
+        afCount <- afCount + (eij) / 2  # YT: dosage/2 ?
 
         ##
         if (output_format == "bgvcf") {
             if (output_haplotype_dosages) {
                 if (method == "pseudoHaploid") {
-                    q_t <- fbsoL[[1]][["gammaEK_t"]] + fbsoL[[2]][["gammaEK_t"]]
+                    q_t <- fbsoL[[1]][["gammaEK_t"]] + fbsoL[[2]][["gammaEK_t"]]  # YT: so q_t is something closed to haplotype dosage?
                 } else {
                     ## do this here I suppose? 
                     q_t <- 2 * fbsoL[[1]][["gammaEK_t"]]
@@ -860,12 +863,12 @@ make_column_of_vcf <- function(
     z <- get_max_gen_rapid(gp_t)
     gt <- c("0/0","0/1","1/1")[z[, 2]]
     z2 <- cbind(z[, 2], z[, 1]) ## flip - argh
-    gt[gp_t[z2] < 0.9] <- "./."
+    gt[gp_t[z2] < 0.9] <- "./."  # YT: "./." not 90% sure?
     precision <- 3
     format_string <- paste0(":%.", precision, "f,%.", precision, "f,%.", precision, "f:%.", precision, "f")
     str <- paste0(
         gt, 
-        sprintf(format_string, gp_t[1, ], gp_t[2, ], gp_t[3, ], gp_t[2, ] + 2 * gp_t[3, ])
+        sprintf(format_string, gp_t[1, ], gp_t[2, ], gp_t[3, ], gp_t[2, ] + 2 * gp_t[3, ])  #gp_t genotype probability 0/0,0/1,1/1
     )
     if (is.null(q_t) == FALSE) {
         format_string <- paste0("%.", precision, "f")
