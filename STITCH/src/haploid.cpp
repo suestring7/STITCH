@@ -575,7 +575,7 @@ Rcpp::List forwardBackwardHaploid(
   const int nReads = sampleReads.size();
   const int nGrids = alphaMatCurrent_tc.n_cols + 1;  // what we iterate over / grid
   const int K = eHapsCurrent_tc.n_rows; // traditional K for haplotypes
-  const int S = eHapsCurrent_tc.n_slices;
+  const int S = eHapsCurrent_tc.n_slices; // Sets of runs
   const int nSNPs = eHapsCurrent_tc.n_cols;
   //
   // new variables
