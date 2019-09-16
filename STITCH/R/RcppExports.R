@@ -62,11 +62,6 @@ forwardBackwardDiploid <- function(sampleReads, eHapsCurrent_tc, alphaMatCurrent
 }
 
 #' @export
-rcpp_make_sampleReads_from_hap <- function(non_NA_cols, reference_phred, reference_hap) {
-    .Call('_STITCH_rcpp_make_sampleReads_from_hap', PACKAGE = 'STITCH', non_NA_cols, reference_phred, reference_hap)
-}
-
-#' @export
 increment2N <- function(yT, xT, y, z) {
     .Call('_STITCH_increment2N', PACKAGE = 'STITCH', yT, xT, y, z)
 }
@@ -147,13 +142,93 @@ rcpp_sample_path <- function(read_labels, eMatRead_t, sampleReads, maxDifference
 }
 
 #' @export
-rcpp_make_smoothed_rate <- function(sigmaSum_unnormalized, sigma_rate, L_grid, grid_distances, nGrids, shuffle_bin_radius, verbose = FALSE) {
-    .Call('_STITCH_rcpp_make_smoothed_rate', PACKAGE = 'STITCH', sigmaSum_unnormalized, sigma_rate, L_grid, grid_distances, nGrids, shuffle_bin_radius, verbose)
+rcpp_make_smoothed_rate <- function(sigma_rate, L_grid, shuffle_bin_radius, verbose = FALSE) {
+    .Call('_STITCH_rcpp_make_smoothed_rate', PACKAGE = 'STITCH', sigma_rate, L_grid, shuffle_bin_radius, verbose)
 }
 
 #' @export
 rcpp_calculate_hwe_p <- function(reference_hap) {
     .Call('_STITCH_rcpp_calculate_hwe_p', PACKAGE = 'STITCH', reference_hap)
+}
+
+#' @export
+Rcpp_rhb_reader_chunk_process <- function(rhb, hold, chunk, chunk_length, start_snp, end_snp, bs, ihold, haps_to_get, final_snp_to_get, n_haps, binary_get_line, ref_alleleCount, rh_in_L, final_snp_gotten) {
+    invisible(.Call('_STITCH_Rcpp_rhb_reader_chunk_process', PACKAGE = 'STITCH', rhb, hold, chunk, chunk_length, start_snp, end_snp, bs, ihold, haps_to_get, final_snp_to_get, n_haps, binary_get_line, ref_alleleCount, rh_in_L, final_snp_gotten))
+}
+
+#' @export
+rcpp_int_expand <- function(hapc, nSNPs) {
+    .Call('_STITCH_rcpp_int_expand', PACKAGE = 'STITCH', hapc, nSNPs)
+}
+
+#' @export
+rcpp_int_contract <- function(hap) {
+    .Call('_STITCH_rcpp_int_contract', PACKAGE = 'STITCH', hap)
+}
+
+#' @export
+calc_dist_between_rhb_t_and_hap <- function(rhb_t, hap, nSNPs) {
+    .Call('_STITCH_calc_dist_between_rhb_t_and_hap', PACKAGE = 'STITCH', rhb_t, hap, nSNPs)
+}
+
+#' @export
+inflate_fhb_t <- function(rhb_t, haps_to_get, nSNPs) {
+    .Call('_STITCH_inflate_fhb_t', PACKAGE = 'STITCH', rhb_t, haps_to_get, nSNPs)
+}
+
+#' @export
+inflate_fhb <- function(rhb, haps_to_get, nSNPs) {
+    .Call('_STITCH_inflate_fhb', PACKAGE = 'STITCH', rhb, haps_to_get, nSNPs)
+}
+
+#' @export
+Rcpp_ref_run_forward_haploid <- function(alphaHat_t, c, eMatGrid_t, alphaMatCurrentX_tc, transMatRate_tc_H, priorCurrent_m, s) {
+    invisible(.Call('_STITCH_Rcpp_ref_run_forward_haploid', PACKAGE = 'STITCH', alphaHat_t, c, eMatGrid_t, alphaMatCurrentX_tc, transMatRate_tc_H, priorCurrent_m, s))
+}
+
+#' @export
+Rcpp_ref_run_backward_haploid <- function(betaHat_t, c, eMatGrid_t, alphaMatCurrentX_tc, transMatRate_tc_H, alphaMatSum_tc, s) {
+    invisible(.Call('_STITCH_Rcpp_ref_run_backward_haploid', PACKAGE = 'STITCH', betaHat_t, c, eMatGrid_t, alphaMatCurrentX_tc, transMatRate_tc_H, alphaMatSum_tc, s))
+}
+
+#' @export
+rcpp_make_sampleReads_from_hap <- function(rh_in_L, reference_phred, reference_hap) {
+    .Call('_STITCH_rcpp_make_sampleReads_from_hap', PACKAGE = 'STITCH', rh_in_L, reference_phred, reference_hap)
+}
+
+#' @export
+ref_make_ehh <- function(eHapsCurrent_tc, ehh_h1_S, ehh_h1_D, ehh_h0_S, ehh_h0_D, reference_phred) {
+    invisible(.Call('_STITCH_ref_make_ehh', PACKAGE = 'STITCH', eHapsCurrent_tc, ehh_h1_S, ehh_h1_D, ehh_h0_S, ehh_h0_D, reference_phred))
+}
+
+#' @export
+rcpp_ref_bound_eMatGrid_t <- function(eMatGrid_t, maxEmissionMatrixDifference, rescale, bound) {
+    invisible(.Call('_STITCH_rcpp_ref_bound_eMatGrid_t', PACKAGE = 'STITCH', eMatGrid_t, maxEmissionMatrixDifference, rescale, bound))
+}
+
+#' @export
+rcpp_ref_make_eMatGrid_t <- function(eMatGrid_t, reference_hap, rh_in_L, eHapsCurrent_tc, grid, reference_phred, s, maxEmissionMatrixDifference, ehh_h1_S, ehh_h0_S, rescale = TRUE, bound = TRUE) {
+    invisible(.Call('_STITCH_rcpp_ref_make_eMatGrid_t', PACKAGE = 'STITCH', eMatGrid_t, reference_hap, rh_in_L, eHapsCurrent_tc, grid, reference_phred, s, maxEmissionMatrixDifference, ehh_h1_S, ehh_h0_S, rescale, bound))
+}
+
+#' @export
+ref_make_haploid_gammaUpdate_t <- function(s, gammaSum0_tc, gammaSum1_tc, gamma_t, eHapsCurrent_tc, reference_hap, rh_in_L, grid, reference_phred, ehh_h1_D, ehh_h0_D) {
+    invisible(.Call('_STITCH_ref_make_haploid_gammaUpdate_t', PACKAGE = 'STITCH', s, gammaSum0_tc, gammaSum1_tc, gamma_t, eHapsCurrent_tc, reference_hap, rh_in_L, grid, reference_phred, ehh_h1_D, ehh_h0_D))
+}
+
+#' @export
+reference_fbh <- function(eHapsCurrent_tc, alphaMatCurrentX_tc, transMatRate_tc_H, priorCurrent_m, alphaHat_t, betaHat_t, gamma_t, eMatGrid_t, ehh_h1_S, ehh_h1_D, ehh_h0_S, ehh_h0_D, maxDifferenceBetweenReads, maxEmissionMatrixDifference, suppressOutput, reference_hap, rh_in_L, reference_phred, gammaSum0_tc, gammaSum1_tc, alphaMatSum_tc, hapSum_tc, priorSum_m, list_of_break_results, list_of_fromMat, list_of_fbd_store, nbreaks, save_fbd_store, iSample1, pshaM, return_extra = FALSE, return_gammaK = FALSE, grid = 0L, rescale_eMatGrid_t = TRUE, bound_eMatGrid_t = TRUE, run_fb_subset = FALSE) {
+    .Call('_STITCH_reference_fbh', PACKAGE = 'STITCH', eHapsCurrent_tc, alphaMatCurrentX_tc, transMatRate_tc_H, priorCurrent_m, alphaHat_t, betaHat_t, gamma_t, eMatGrid_t, ehh_h1_S, ehh_h1_D, ehh_h0_S, ehh_h0_D, maxDifferenceBetweenReads, maxEmissionMatrixDifference, suppressOutput, reference_hap, rh_in_L, reference_phred, gammaSum0_tc, gammaSum1_tc, alphaMatSum_tc, hapSum_tc, priorSum_m, list_of_break_results, list_of_fromMat, list_of_fbd_store, nbreaks, save_fbd_store, iSample1, pshaM, return_extra, return_gammaK, grid, rescale_eMatGrid_t, bound_eMatGrid_t, run_fb_subset)
+}
+
+#' @export
+rcpp_make_alphaMatSumX_tc <- function(alphaMatCurrent_tc, alphaMatCurrentX_tc, transMatRate_tc_H) {
+    invisible(.Call('_STITCH_rcpp_make_alphaMatSumX_tc', PACKAGE = 'STITCH', alphaMatCurrent_tc, alphaMatCurrentX_tc, transMatRate_tc_H))
+}
+
+#' @export
+rcpp_finalize_alphaMatSum_tc <- function(alphaMatSum_tc, transMatRate_tc_H, alphaMatCurrentX_tc) {
+    invisible(.Call('_STITCH_rcpp_finalize_alphaMatSum_tc', PACKAGE = 'STITCH', alphaMatSum_tc, transMatRate_tc_H, alphaMatCurrentX_tc))
 }
 
 #' @export

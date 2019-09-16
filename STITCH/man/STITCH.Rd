@@ -26,9 +26,10 @@ STITCH(chr, nGen, posfile, K, S = 1, outputdir, nStarts, tempdir = NA,
   downsampleSamplesKeepList = NA, subsetSNPsfile = NA,
   useSoftClippedBases = FALSE, outputBlockSize = 1000,
   outputSNPBlockSize = 10000, inputBundleBlockSize = NA,
-  reference_haplotype_file = "", reference_legend_file = "",
-  reference_sample_file = "", reference_populations = NA,
-  reference_phred = 20, reference_iterations = 40,
+  genetic_map_file = "", reference_haplotype_file = "",
+  reference_legend_file = "", reference_sample_file = "",
+  reference_populations = NA, reference_phred = 20,
+  reference_iterations = 40,
   reference_shuffleHaplotypeIterations = c(4, 8, 12, 16),
   output_filename = NULL, initial_min_hapProb = 0.2,
   initial_max_hapProb = 0.8, regenerateInputWithDefaultValues = FALSE,
@@ -145,6 +146,8 @@ STITCH(chr, nGen, posfile, K, S = 1, outputdir, nStarts, tempdir = NA,
 \item{outputSNPBlockSize}{How many SNPs to write to disk at one time to reduce RAM usage when making VCFs}
 
 \item{inputBundleBlockSize}{If NA, disable bundling of input files. If not NA, bundle together input files in sets of <= inputBundleBlockSize together}
+
+\item{genetic_map_file}{Path to file with genetic map information, a file with 3 white-space delimited entries giving position (1-based), genetic rate map in cM/Mbp, and genetic map in cM}
 
 \item{reference_haplotype_file}{Path to reference haplotype file in IMPUTE format (file with no header and no rownames, one row per SNP, one column per reference haplotype, space separated, values must be 0 or 1)}
 
