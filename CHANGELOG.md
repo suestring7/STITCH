@@ -1,9 +1,15 @@
 * YT edits
 	* Add comments to help understand the variables.
+=======
+* v1.6.2
+	* Change internal haplotype format (rhb)
+	* Speed up reference haplotype file loading from disk
+* v1.6.1
+	* Speed up reference haplotype EM considerably
 * v1.6.0
 	* Introduce new variable S as the number of sets of parameters results are averaged over
 * v1.5.7
-	* Push CC through to htslib to robustify against compilation issues 
+	* Push CC through to htslib to robustify against compilation issues
 * v1.5.6
 	* Add reference_shuffleHaplotypeIterations
 * v1.5.5

@@ -168,7 +168,8 @@ make_phasefile <- function(
     header = NULL,
     K = NA,
     phasemaster = NULL,
-    samples_are_inbred = FALSE
+    samples_are_inbred = FALSE,
+    write_row_as_NA = NULL ## boolean vector when defined
 ) {
     set.seed(seed)
     if (is.na(K)) {
@@ -199,6 +200,12 @@ make_phasefile <- function(
     } else {
         colnames(out) <- header
     }
+    if (!is.null(write_row_as_NA)) {
+        if (nrow(out) != length(write_row_as_NA)) {
+            stop("Supplied write_row_as_NA must be the same dimension as phase")
+        }
+        out[write_row_as_NA, ] <- "NA|NA"
+    }
     write.table(out, file = phasefile, sep = "\t", row.names = FALSE, col.names = include_header, quote = FALSE)
     if (length(colnames(out)) == 1) {
         dimnames(phase)[[2]] <- list(colnames(out))
@@ -227,7 +234,8 @@ make_acceptance_test_data_package <- function(
     sample_names = NULL,
     samples_are_inbred = FALSE,
     phred_bq = 25,
-    regionName = NA
+    regionName = NA,
+    write_row_as_NA = NULL
 ) {
 
     if (length(n_reads) == 1) {
@@ -275,6 +283,7 @@ make_acceptance_test_data_package <- function(
     L <- pos[, 2]
 
     phasefile <- file.path(outputdir, paste0("phase.", regionName, ".txt"))
+    
     phase <- make_phasefile(
         phasefile,
         n_snps = n_snps,
@@ -282,7 +291,8 @@ make_acceptance_test_data_package <- function(
         K = K,
         seed = seed,
         phasemaster = phasemaster,
-        samples_are_inbred = samples_are_inbred
+        samples_are_inbred = samples_are_inbred,
+        write_row_as_NA = write_row_as_NA
     )
 
     genfile <- file.path(outputdir, paste0("gen.", regionName, ".file.txt"))
@@ -582,7 +592,8 @@ make_reference_package <- function(
     phasemaster = NULL,
     tmpdir = tempdir(),
     use_tmpdir_directly = FALSE,
-    regionName = NA    
+    regionName = NA,
+    expRate = 0.5
 ) {
 
     if (is.na(regionName)) {
@@ -606,6 +617,7 @@ make_reference_package <- function(
     reference_haplotype_file <- file.path(outputdir, paste0("ref hap.", regionName, ".txt.gz"))
     reference_legend_file <- file.path(outputdir, paste0("ref legend.", regionName, ".txt.gz"))
     reference_sample_file <- file.path(outputdir, paste0("ref sample.", regionName, ".txt"))
+    reference_genetic_map_file <- file.path(outputdir, paste0("ref gen.", regionName, ".txt.gz"))
     posfile <- file.path(outputdir, paste0("ref.", regionName, ".pos.txt"))
     
     ##     
@@ -649,7 +661,7 @@ make_reference_package <- function(
         for (i_hap in 1:2) {
             c <- 2 * (i_sample - 1) + i_hap
             if (is.null(phasemaster )) {
-                g <- sample(c(0, 1), n_snps, replace = TRUE)
+                g <- sample(c(0L, 1L), n_snps, replace = TRUE)
             } else {
                 g <- phasemaster[, sample(1:ncol(phasemaster), 1)]
             }
@@ -662,22 +674,66 @@ make_reference_package <- function(
         w <- 2 * which(reference_samples[, "SEX"] == "male")
         reference_haplotypes[, w] <- "-"
     }
+
     simple_write(reference_haplotypes, reference_haplotype_file, gzip = TRUE, col.names = FALSE)
 
+    ## make genetic map as well
+    ## do most SNPs, assume 1 cM / Mbp
+    ## assume
+    genetic_map <- make_genetic_map_file(L = L, n_snps = n_snps, expRate = expRate)
+    simple_write(genetic_map, reference_genetic_map_file, gzip = TRUE, col.names = TRUE)
+
+    ## not sure how important long term    
+    if (is.na(reference_sample_header[1])) {
+        colClasses <- get_reference_colClasses(
+            reference_sample_file = reference_sample_file,
+            reference_populations = reference_populations,
+            chr = chr
+        )
+    } else {
+        ## not NA, these have been set, and will fail the above
+        colClasses <- NULL
+    }
+    
     return(
         list(
             reference_haplotype_file = reference_haplotype_file,
             reference_sample_file = reference_sample_file,
             reference_legend_file = reference_legend_file,
+            reference_genetic_map_file = reference_genetic_map_file,
             reference_populations = reference_populations,
             pos = pos,
             reference_haplotypes = reference_haplotypes,
             reference_legend = reference_legend,
-            reference_samples = reference_samples
+            reference_samples = reference_samples,
+            colClasses = colClasses
         )
     )
 
 }
+
+
+##position COMBINED_rate(cM/Mb) Genetic_Map(cM)
+##150118 1.13462264157027 0
+##154675 1.12962782559127 0.00517047537763574
+##154753 1.13654510133156 0.00525858634803186
+##168567 1.58657526542862 0.0209588203778261
+
+make_genetic_map_file <- function(L, n_snps, expRate = 0.5) {
+    if (is.na(L[1])) {
+        L <- 1:n_snps
+    }
+    genetic_map <- array(NA, c(n_snps, 3))
+    colnames(genetic_map) <- c("position", "COMBINED_rate.cM.Mb.", "Genetic_Map.cM.")
+    genetic_map[, "position"] <- L
+    genetic_map[, "COMBINED_rate.cM.Mb."] <- expRate
+    genetic_map[n_snps, "COMBINED_rate.cM.Mb."] <- 0
+    ## fill in - be simple!
+    genetic_map <- fill_in_genetic_map_cm_column(genetic_map)
+    return(genetic_map)
+}
+
+
 
 simulate_a_read <- function(
     i_read,
